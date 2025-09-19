@@ -105,10 +105,7 @@ class EmoTinyPreprocessor:
             )
         return embedding[0]  # Return single embedding
     
-    def prepare_training_data(self, 
-                            texts: List[str], 
-                            labels: List[str],
-                            validation_split: float = 0.0) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
+    def prepare_training_data(self, texts: List[str], labels: List[str], validation_split: float = 0.0) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
         """
         Prepare training data with embeddings and encoded labels.
         
