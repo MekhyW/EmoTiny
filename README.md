@@ -102,15 +102,15 @@ python examples/evaluate_model.py \
 
 | Emotion | Description | Example Texts |
 |---------|-------------|---------------|
-| `neutral` | Neutral/calm state | "This is okay", "I understand" |
-| `happy` | Joy, happiness | "I'm so happy!", "This is great!" |
-| `sad` | Sadness, melancholy | "I'm feeling down", "This is sad" |
-| `angry` | Anger, frustration | "I'm furious!", "This is terrible!" |
-| `surprised` | Surprise, amazement | "What a surprise!", "I can't believe it!" |
+| `neutral` | Neutral/calm state | "The meeting will be at 8pm", "Got it, I understand" |
+| `happy` | Joy, happiness | "I'm so happy!", "Yay this is great!" |
+| `sad` | Sadness, melancholy | "I'm feeling down", "My dog just died..." |
+| `angry` | Anger, frustration | "I'm furious!", "Goddamit you had ONE job" |
+| `surprised` | Surprise, shock, fear | "What the hell is this??", "I can't believe it!" |
 | `disgusted` | Disgust, revulsion | "That's disgusting", "Eww, gross!" |
-| `mischievous` | Playful, sassy | "You're being naughty", "How mischievous!" |
+| `mischievous` | Playful, sassy | "You're being naughty", "Come here often, sweetie?" |
 | `love` | Love, affection | "I love you", "You're amazing!" |
-| `nightmare` | Fear, horror | "This is terrifying", "What a nightmare!" |
+| `nightmare` | Horror, usually a dark twist | "You should beg for mercy", "Death will be slow and painful" |
 
 ## Advanced Configuration
 
