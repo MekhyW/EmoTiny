@@ -193,7 +193,7 @@ def classify_emotion(text: str) -> str:
         
     Returns:
         Predicted emotion label (one of: neutral, happy, sad, angry, surprised, 
-        disgusted, mischievous, love, nightmare)
+        disgusted, mischievous, love)
         
     Example:
         >>> load_model("path/to/trained/model")
@@ -275,7 +275,6 @@ def quick_test():
         "I'm feeling neutral about this.",
         "That's disgusting.",
         "You're being quite mischievous!",
-        "This is a nightmare.",
         "I'm really angry about this."
     ]
     print("Quick test results:")

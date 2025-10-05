@@ -33,7 +33,6 @@ def main():
             "I'm feeling neutral about this.",
             "That's disgusting.",
             "You're being quite mischievous!",
-            "This is a nightmare.",
             "I'm really angry about this situation.",
             # Portuguese examples
             "Estou muito feliz hoje!",

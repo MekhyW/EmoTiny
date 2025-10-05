@@ -10,8 +10,7 @@ EMOTION_LABELS = [
     "surprised",
     "disgusted",
     "mischievous",
-    "love",
-    "nightmare"
+    "love"
 ]
 
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"

@@ -4,15 +4,6 @@
 
 EmoTiny is a lightweight, optimized emotion classification system designed specifically for real-time applications like animated face control. It provides low-latency emotion detection from short text inputs (1-4 sentences) with support for multiple languages and robustness to ASR (Automatic Speech Recognition) noise.
 
-## Features
-
-- **Ultra-fast inference**: ~1-5ms per classification on CPU
-- **Multilingual support**: English, Portuguese, Spanish
-- **ASR-robust**: Handles transcription errors and noise
-- **Edge-friendly**: Optimized for Raspberry Pi, LattePanda, and similar devices
-- **ONNX optimized**: Quantized models for maximum performance
-- **9 emotion classes**: neutral, happy, sad, angry, surprised, disgusted, mischievous, love, nightmare
-
 ## Architecture
 
 EmoTiny uses a two-stage approach:
@@ -110,7 +101,6 @@ python examples/evaluate_model.py \
 | `disgusted` | Disgust, revulsion | "That's disgusting", "Eww, gross!" |
 | `mischievous` | Playful, sassy | "You're being naughty", "Come here often, sweetie?" |
 | `love` | Love, affection | "I love you", "You're amazing!" |
-| `nightmare` | Horror, usually a dark twist | "You should beg for mercy", "Death will be slow and painful" |
 
 ## Advanced Configuration
 
