@@ -55,12 +55,12 @@ while True:
 
 ### 1. Prepare Dataset
 
-Option A: Use the provided generator to build a dataset from raw texts using a local judge LLM via Ollama (Stable LM 2 1.6B).
+Option A: Use the provided generator to build a dataset from raw texts using a local judge LLM via Ollama.
 
-1) Install and start Ollama, then pull the Stable LM 2 1.6B model:
+1) Install and start Ollama, then pull the desired model:
 
 ```bash
-ollama pull stablelm2:1.6b
+ollama pull gemma3:1b
 ollama serve
 ```
 
@@ -73,7 +73,7 @@ python examples/generate_dataset.py \
   --data-dir ./data \
   --output-parquet ./data/emotions.parquet \
   --output-csv ./data/emotions.csv \
-  --model stablelm2:1.6b
+  --model gemma3:1b
 ```
 
 This will create `text` and `emotion` columns labeled with one of the 8 supported emotions.

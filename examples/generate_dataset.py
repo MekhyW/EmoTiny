@@ -1,5 +1,5 @@
 """
-Generate a labeled emotion dataset from raw texts using a local LLM (Stable LM 2 1.6B via Ollama).
+Generate a labeled emotion dataset from raw texts using a local LLM via Ollama.
 
 Reads all text files from a data directory, splits them into phrases, classifies each phrase into one
 of the 8 EmoTiny labels using Ollama, and saves the resulting dataset to Parquet and optionally CSV.
@@ -10,7 +10,7 @@ import re
 import argparse
 from typing import List, Dict, Tuple
 import pandas as pd
-import requests
+from ollama import Client
 from tqdm import tqdm
 
 EMOTION_LABELS = ["neutral", "happy", "sad", "angry", "surprised", "disgusted", "mischievous", "love"]
@@ -45,7 +45,7 @@ def split_into_phrases(text: str, min_words: int = 3, max_chars: int = 400) -> L
 
 
 def normalize_label(raw: str) -> str:
-    t = raw.strip().lower().strip("'\"` .!?")
+    t = raw.split()[0].strip().lower().strip("'\"` .!?")
     mapping: Dict[str, str] = {
         "neutral": "neutral",
         "calm": "neutral",
@@ -90,38 +90,40 @@ def normalize_label(raw: str) -> str:
     return "neutral"
 
 
-def classify_phrase_with_ollama(phrase: str, model: str = "stablelm2:1.6b", host: str = "http://localhost:11434", temperature: float = 0.0, timeout: int = 60) -> str:
-    prompt = (
-        "You are an emotion classifier for short text in English and Portuguese.\n"
-        "Classify the emotion of the following phrase into EXACTLY ONE of these labels:\n"
-        "neutral, happy, sad, angry, surprised, disgusted, mischievous, love.\n\n"
-        "Use these definitions:\n"
-        "- neutral: neutral/calm state, phrase without strong emotion\n"
-        "- happy: joy, happiness, very positive emotion\n"
-        "- sad: sadness, melancholy, feeling down\n"
-        "- angry: anger, frustration, very negative emotion\n"
-        "- surprised: surprise, shock, fear, unexpected event\n"
-        "- disgusted: disgust, revulsion, aversion\n"
-        "- mischievous: playful, sassy, sexy, seductive\n"
-        "- love: love, explicit affection, romantic\n\n"
-        "Return ONLY the label word (no punctuation, no explanation). "
-        "Use English labels even for Portuguese text.\n\n"
-        f"Phrase: {phrase}\nLabel:"
-    )
-    url = host.rstrip("/") + "/api/generate"
-    payload = {"model": model, "prompt": prompt, "stream": False, "options": {"temperature": temperature}}
-    r = requests.post(url, json=payload, timeout=timeout)
-    r.raise_for_status()
-    data = r.json()
+def classify_phrase_with_ollama(phrase: str, model: str = "gemma3:1b", host: str = "http://localhost:11434", temperature: float = 0.0, timeout: int = 60) -> str:
+    prompt = f"""
+You are an emotion classifier for short text in English and Portuguese.
+
+Classify the emotion of the following phrase into EXACTLY ONE of these labels: neutral, happy, sad, angry, surprised, disgusted, mischievous, love.
+
+Use these definitions:
+- neutral: neutral/calm state, phrase without strong emotion (most phrases will probably fall under this label)
+- happy: joy, happiness, very positive emotion
+- sad: sadness, melancholy, feeling down
+- angry: anger, frustration, very negative emotion
+- surprised: surprise, shock, fear, unexpected event
+- disgusted: disgust, revulsion, aversion
+- mischievous: playful, sassy, sexy, seductive
+- love: love, explicit affection, romantic
+
+Return ONLY the label word.
+Do NOT include any punctuation, and do NOT justify your choice.
+Use English labels even for Portuguese text.
+
+Phrase: {phrase}
+Label:
+    """
+    client = Client(host=host)
+    data = client.generate(model=model, prompt=prompt, options={"temperature": temperature})
     return normalize_label(data.get("response", ""))
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate emotion dataset using Ollama Stable LM 2 1.6B")
+    parser = argparse.ArgumentParser(description="Generate emotion dataset using a small LLM via Ollama")
     parser.add_argument("--data-dir", default="./data", help="Directory containing raw text files")
     parser.add_argument("--output-parquet", default="./data/emotions.parquet", help="Output Parquet file path")
     parser.add_argument("--output-csv", default="./data/emotions.csv", help="Optional output CSV file path")
-    parser.add_argument("--model", default="stablelm2:1.6b", help="Ollama model name")
+    parser.add_argument("--model", default="gemma3:1b", help="Ollama model name")
     parser.add_argument("--host", default="http://localhost:11434", help="Ollama server host")
     parser.add_argument("--min-words", type=int, default=2, help="Minimum words per phrase")
     parser.add_argument("--max-chars", type=int, default=400, help="Maximum characters per phrase")
