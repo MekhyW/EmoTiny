@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Dataset generation outputs
+data/
+*.parquet
+*.csv
+generated_datasets/

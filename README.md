@@ -55,7 +55,30 @@ while True:
 
 ### 1. Prepare Dataset
 
-Create a CSV file with `text` and `emotion` columns:
+Option A: Use the provided generator to build a dataset from raw texts using a local judge LLM via Ollama (Stable LM 2 1.6B).
+
+1) Install and start Ollama, then pull the Stable LM 2 1.6B model:
+
+```bash
+ollama pull stablelm2:1.6b
+ollama serve
+```
+
+2) Put your raw `.txt` or `.md` files under `./data/` (subfolders allowed).
+
+3) Run the dataset generator:
+
+```bash
+python examples/generate_dataset.py \
+  --data-dir ./data \
+  --output-parquet ./data/emotions.parquet \
+  --output-csv ./data/emotions.csv \
+  --model stablelm2:1.6b
+```
+
+This will create `text` and `emotion` columns labeled with one of the 8 supported emotions.
+
+Option B: Create a CSV file manually with `text` and `emotion` columns:
 
 ```csv
 text,emotion
@@ -71,7 +94,7 @@ text,emotion
 
 ```bash
 python examples/train_model.py \
-    --data your_dataset.csv \
+    --data ./data/emotions.csv \
     --output ./models/emotiny \
     --classifier mlp \
     --export-onnx \
@@ -83,7 +106,7 @@ python examples/train_model.py \
 ```bash
 python examples/evaluate_model.py \
     --model ./models/emotiny \
-    --test-data test_dataset.csv \
+    --test-data ./data/emotions.csv \
     --benchmark \
     --multilingual \
     --asr-robustness
