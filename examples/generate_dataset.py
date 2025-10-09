@@ -119,7 +119,7 @@ You are an emotion classifier for short text in English and Portuguese.
 Classify the emotion of the following phrase into EXACTLY ONE of these labels: neutral, happy, sad, angry, surprised, disgusted, mischievous, love.
 
 Use these definitions:
-- neutral: neutral/calm state, phrase without strong emotion (most phrases will probably fall under this label)
+- neutral: neutral/calm state, phrase without strong emotion
 - happy: joy, happiness, very positive emotion
 - sad: sadness, melancholy, feeling down
 - angry: anger, frustration, very negative emotion
