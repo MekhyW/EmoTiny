@@ -210,4 +210,5 @@ __marimo__/
 data/
 *.parquet
 *.csv
+*.sqlite
 generated_datasets/
