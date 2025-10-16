@@ -109,7 +109,7 @@ def normalize_label(raw: str) -> str:
     canonical = mapping.get(t, t)
     if canonical in EMOTION_LABELS:
         return canonical
-    return "neutral"
+    return ""
 
 
 def classify_phrase_with_ollama(phrase: str, model: str = "gemma3:1b", host: str = "http://localhost:11434", temperature: float = 0.0, timeout: int = 60) -> str:
@@ -145,10 +145,10 @@ def classify_phrase_with_retries(phrase: str, model: str, host: str, temperature
     while True:
         try:
             return classify_phrase_with_ollama(phrase, model=model, host=host, temperature=temperature, timeout=timeout)
-        except Exception:
+        except Exception as e:
             attempt += 1
             if attempt > retries:
-                return "neutral"
+                raise Exception(f"Failed after {retries} retries: {e}")
             time.sleep(backoff * attempt)
 
 
