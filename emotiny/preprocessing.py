@@ -27,6 +27,8 @@ class EmoTinyPreprocessor:
                 
     def clean_text(self, text: str) -> str:
         """Clean text to handle ASR noise and normalize input"""
+        if pd.isna(text) or text is None:
+            return ""
         text = text.strip()  # Handle common ASR artifacts
         text = re.sub(r'\s+', ' ', text) # Remove excessive whitespace
         text = re.sub(r'[.]{2,}', '.', text)  # Multiple dots
@@ -34,20 +36,14 @@ class EmoTinyPreprocessor:
         text = re.sub(r'[!]{2,}', '!', text)  # Multiple exclamation marks
         text = re.sub(r'[^\w\s.,!?¿¡áéíóúàèìòùâêîôûãõçñü-]', '', text, flags=re.IGNORECASE)  # Remove or normalize special characters that might confuse the model
         if len(text.strip()) < 2:
-            return "neutral"  # Fallback for very short/empty text
+            return ""
         return text.strip()
     
     def encode_texts(self, texts: List[str], batch_size: int = 32, show_progress: bool = True) -> np.ndarray:
         """Generate embeddings for a list of texts"""
         self.load_model()
         cleaned_texts = [self.clean_text(text) for text in texts]
-        embeddings = self.model.encode(
-            cleaned_texts,
-            batch_size=batch_size,
-            show_progress_bar=show_progress,
-            convert_to_numpy=True,
-            normalize_embeddings=True  # L2 normalization for better classification
-        )
+        embeddings = self.model.encode(cleaned_texts, batch_size=batch_size, show_progress_bar=show_progress, convert_to_numpy=True, normalize_embeddings=True)
         return embeddings
     
     def encode_single_text(self, text: str) -> np.ndarray:
@@ -55,13 +51,7 @@ class EmoTinyPreprocessor:
         self.load_model()
         cleaned_text = self.clean_text(text)
         with torch.no_grad():
-            embedding = self.model.encode(
-                [cleaned_text],
-                batch_size=1,
-                show_progress_bar=False,
-                convert_to_numpy=True,
-                normalize_embeddings=True
-            )
+            embedding = self.model.encode([cleaned_text], batch_size=1, show_progress_bar=False, convert_to_numpy=True, normalize_embeddings=True)
         return embedding[0]  # Return single embedding
     
     def prepare_training_data(self, texts: List[str], labels: List[str], validation_split: float = 0.0) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
@@ -80,10 +70,16 @@ class EmoTinyPreprocessor:
         df = pd.read_csv(csv_path)
         if text_column not in df.columns or label_column not in df.columns:
             raise ValueError(f"CSV must contain '{text_column}' and '{label_column}' columns")
+        initial_count = len(df)
+        df = df.dropna(subset=[text_column, label_column])
+        df = df[df[text_column].astype(str).str.strip() != ""]
         valid_emotions = set(EMOTION_LABELS)
         df = df[df[label_column].isin(valid_emotions)]
         if len(df) == 0:
             raise ValueError(f"No valid emotions found. Expected one of: {EMOTION_LABELS}")
+        filtered_count = initial_count - len(df)
+        if filtered_count > 0:
+            print(f"Filtered out {filtered_count} rows with missing/invalid text or labels")
         print(f"Loaded {len(df)} samples from {csv_path}")
         print(f"Emotion distribution:\n{df[label_column].value_counts()}")
         return df[text_column].tolist(), df[label_column].tolist()

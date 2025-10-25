@@ -14,7 +14,9 @@ DEFAULT_TRAIN_CONFIG = {
     "mlp_validation_fraction": 0.1,
     "logistic_max_iter": 1000,
     "logistic_solver": "lbfgs",
-    "cross_validation_folds": 5
+    "cross_validation_folds": 5,
+    "alpha": 0.001,
+    "learning_rate": "adaptive"
 }
 
 QUANTIZATION_CONFIG = {

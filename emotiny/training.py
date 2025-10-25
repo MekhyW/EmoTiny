@@ -40,8 +40,8 @@ class EmoTinyTrainer:
                 early_stopping=self.config["mlp_early_stopping"],
                 validation_fraction=self.config["mlp_validation_fraction"],
                 random_state=self.config["random_state"],
-                learning_rate="adaptive",
-                alpha=0.001  # L2 regularization
+                learning_rate=self.config["learning_rate"],
+                alpha=self.config["alpha"]
             )
         else:
             raise ValueError(f"Unknown classifier type: {self.config['classifier_type']}")
@@ -99,41 +99,11 @@ class EmoTinyTrainer:
             print(f"Cross-validation accuracy: {cv_scores.mean():.4f}")
         return self.training_history
     
-    def hyperparameter_search(self, texts: List[str], labels: List[str], param_grid: Optional[Dict] = None) -> Dict[str, Any]:
-        """Perform hyperparameter search using GridSearchCV"""
-        print("Performing hyperparameter search...")
-        if param_grid is None:
-            if self.config["classifier_type"] == "logistic":
-                param_grid = {
-                    "C": [0.1, 1.0, 10.0],
-                    "solver": ["lbfgs", "liblinear"],
-                    "max_iter": [500, 1000]
-                }
-            else:  # MLP
-                param_grid = {
-                    "hidden_layer_sizes": [(64,), (128,), (128, 64), (256, 128)],
-                    "alpha": [0.0001, 0.001, 0.01],
-                    "learning_rate": ["constant", "adaptive"]
-                }
-        labels = self.preprocessor.validate_labels(labels)
-        # Filter out samples with ERROR labels
-        texts, labels = self._filter_error_labels(texts, labels)
-        X, y, _, _ = self.preprocessor.prepare_training_data(texts, labels)
-        base_classifier = self._create_classifier()
-        grid_search = GridSearchCV(base_classifier, param_grid, cv=3, scoring="accuracy", n_jobs=-1, verbose=1)
-        grid_search.fit(X, y)
-        print(f"Best parameters: {grid_search.best_params_}")
-        print(f"Best CV score: {grid_search.best_score_:.4f}")
-        self.config.update(grid_search.best_params_)
-        self.classifier = grid_search.best_estimator_
-        return {"best_params": grid_search.best_params_, "best_score": grid_search.best_score_, "cv_results": grid_search.cv_results_}
-    
     def evaluate_model(self, texts: List[str], labels: List[str]) -> Dict[str, Any]:
         """Evaluate the trained model on new data"""
         if self.classifier is None:
             raise ValueError("Model not trained yet. Call train() first.")
         labels = self.preprocessor.validate_labels(labels)
-        # Filter out samples with ERROR labels
         texts, labels = self._filter_error_labels(texts, labels)
         X = self.preprocessor.encode_texts(texts)
         y_true = np.array([self.label_to_idx[label] for label in labels])

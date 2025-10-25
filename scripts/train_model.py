@@ -11,12 +11,11 @@ from emotiny.optimization import EmoTinyOptimizer
 
 def main():
     parser = argparse.ArgumentParser(description="Train EmoTiny emotion classifier")
-    parser.add_argument("--data", required=True, help="Path to CSV dataset")
+    parser.add_argument("--data", default="data/emotions.csv", help="Path to CSV dataset")
     parser.add_argument("--text-column", default="text", help="Name of text column")
     parser.add_argument("--label-column", default="emotion", help="Name of label column")
-    parser.add_argument("--output", required=True, help="Output directory for trained model")
+    parser.add_argument("--output", default="output", help="Output directory for trained model")
     parser.add_argument("--classifier", choices=["logistic", "mlp"], default="mlp", help="Classifier type")
-    parser.add_argument("--hyperparameter-search", action="store_true", help="Perform hyperparameter search")
     parser.add_argument("--export-onnx", action="store_true", help="Export model to ONNX format")
     parser.add_argument("--device", choices=["cpu", "cuda"], default="cpu", help="Device for training")
     args = parser.parse_args()
@@ -27,10 +26,6 @@ def main():
     preprocessor = EmoTinyPreprocessor(device=args.device)
     texts, labels = preprocessor.load_dataset_from_csv(args.data, args.text_column, args.label_column)
     trainer = EmoTinyTrainer({"classifier_type": args.classifier, "random_state": 42})
-    if args.hyperparameter_search:
-        print("🔍 Performing hyperparameter search...")
-        search_results = trainer.hyperparameter_search(texts, labels)
-        print(f"Best parameters: {search_results['best_params']}")
     print("🎯 Training classifier...")
     training_results = trainer.train(texts, labels, save_path=args.output)
     print(f"✅ Training completed!")

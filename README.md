@@ -97,8 +97,7 @@ python examples/train_model.py \
     --data ./data/emotions.csv \
     --output ./models/emotiny \
     --classifier mlp \
-    --export-onnx \
-    --hyperparameter-search
+    --export-onnx
 ```
 
 ### 3. Evaluate Model
