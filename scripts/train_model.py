@@ -17,7 +17,7 @@ def main():
     parser.add_argument("--output", default="output", help="Output directory for trained model")
     parser.add_argument("--classifier", choices=["logistic", "mlp"], default="mlp", help="Classifier type")
     parser.add_argument("--export-onnx", action="store_true", help="Export model to ONNX format")
-    parser.add_argument("--device", choices=["cpu", "cuda"], default="cpu", help="Device for training")
+    parser.add_argument("--device", choices=["cpu", "cuda"], default="cuda", help="Device for training")
     args = parser.parse_args()
     print("🚀 Starting EmoTiny training pipeline...")
     print(f"Dataset: {args.data}")

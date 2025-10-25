@@ -24,9 +24,3 @@ QUANTIZATION_CONFIG = {
     "optimize_for_mobile": False,
     "quantization_mode": "dynamic"  # "dynamic" or "static"
 }
-
-INFERENCE_CONFIG = {
-    "batch_size": 1,
-    "use_onnx": True,  # Use ONNX runtime for faster inference
-    "device": "cpu"    # "cpu" or "cuda"
-}
