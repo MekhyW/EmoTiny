@@ -101,8 +101,8 @@ class EmoTinyPreprocessor:
             if label in self.label_to_idx:
                 valid_labels.append(label)
             else:
-                valid_labels.append("neutral")  # Default fallback
+                valid_labels.append("ERROR")  # Default fallback
                 invalid_count += 1
-        if invalid_count > 0:
-            print(f"Warning: {invalid_count} invalid labels found, replaced with 'neutral'")
+        if invalid_count:
+            print(f"Warning: {invalid_count} invalid labels found")
         return valid_labels

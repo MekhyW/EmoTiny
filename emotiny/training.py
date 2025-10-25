@@ -46,11 +46,28 @@ class EmoTinyTrainer:
         else:
             raise ValueError(f"Unknown classifier type: {self.config['classifier_type']}")
     
+    def _filter_error_labels(self, texts: List[str], labels: List[str]) -> tuple[List[str], List[str]]:
+        """Filter out samples with ERROR labels"""
+        filtered_texts = []
+        filtered_labels = []
+        error_count = 0
+        for text, label in zip(texts, labels):
+            if "ERROR" in label:
+                error_count += 1
+                continue
+            filtered_texts.append(text)
+            filtered_labels.append(label)
+        if error_count:
+            print(f"Filtered out {error_count} samples with ERROR labels")
+        return filtered_texts, filtered_labels
+    
     def train(self, texts: List[str], labels: List[str], save_path: Optional[str] = None, perform_cv: bool = True) -> Dict[str, Any]:
         """Train the emotion classifier"""
         print(f"Training EmoTiny classifier ({self.config['classifier_type']})...")
         print(f"Dataset size: {len(texts)} samples")
         labels = self.preprocessor.validate_labels(labels)
+        texts, labels = self._filter_error_labels(texts, labels)
+        print(f"Dataset size after filtering: {len(texts)} samples")
         X, y, X_val, y_val = self.preprocessor.prepare_training_data(texts, labels, validation_split=0.0)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.config["test_size"], random_state=self.config["random_state"], stratify=y)
         print(f"Training set: {len(X_train)} samples")
@@ -99,6 +116,8 @@ class EmoTinyTrainer:
                     "learning_rate": ["constant", "adaptive"]
                 }
         labels = self.preprocessor.validate_labels(labels)
+        # Filter out samples with ERROR labels
+        texts, labels = self._filter_error_labels(texts, labels)
         X, y, _, _ = self.preprocessor.prepare_training_data(texts, labels)
         base_classifier = self._create_classifier()
         grid_search = GridSearchCV(base_classifier, param_grid, cv=3, scoring="accuracy", n_jobs=-1, verbose=1)
@@ -107,28 +126,22 @@ class EmoTinyTrainer:
         print(f"Best CV score: {grid_search.best_score_:.4f}")
         self.config.update(grid_search.best_params_)
         self.classifier = grid_search.best_estimator_
-        return {
-            "best_params": grid_search.best_params_,
-            "best_score": grid_search.best_score_,
-            "cv_results": grid_search.cv_results_
-        }
+        return {"best_params": grid_search.best_params_, "best_score": grid_search.best_score_, "cv_results": grid_search.cv_results_}
     
     def evaluate_model(self, texts: List[str], labels: List[str]) -> Dict[str, Any]:
         """Evaluate the trained model on new data"""
         if self.classifier is None:
             raise ValueError("Model not trained yet. Call train() first.")
         labels = self.preprocessor.validate_labels(labels)
+        # Filter out samples with ERROR labels
+        texts, labels = self._filter_error_labels(texts, labels)
         X = self.preprocessor.encode_texts(texts)
         y_true = np.array([self.label_to_idx[label] for label in labels])
         y_pred = self.classifier.predict(X)
         accuracy = accuracy_score(y_true, y_pred)
         report = classification_report(y_true, y_pred, target_names=EMOTION_LABELS, output_dict=True)
         cm = confusion_matrix(y_true, y_pred)
-        return {
-            "accuracy": accuracy,
-            "classification_report": report,
-            "confusion_matrix": cm
-        }
+        return {"accuracy": accuracy, "classification_report": report, "confusion_matrix": cm}
     
     def plot_confusion_matrix(self, save_path: Optional[str] = None):
         """Plot confusion matrix from training history."""

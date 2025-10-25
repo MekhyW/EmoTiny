@@ -100,16 +100,10 @@ class EmoTinyOptimizer:
         total_time = end_time - start_time
         avg_time = total_time / num_iterations
         throughput = num_iterations / total_time
-        results = {
-            "total_time_seconds": total_time,
-            "average_time_ms": avg_time * 1000,
-            "throughput_inferences_per_second": throughput,
-            "num_iterations": num_iterations
-        }
         print(f"Benchmark results:")
         print(f"  Average inference time: {avg_time * 1000:.2f} ms")
         print(f"  Throughput: {throughput:.1f} inferences/second")
-        return results
+        return {"total_time_seconds": total_time, "average_time_ms": avg_time * 1000, "throughput_inferences_per_second": throughput, "num_iterations": num_iterations}
     
     def create_deployment_package(self, classifier_path: str, embedding_model_path: str, output_dir: str, include_onnx: bool = True) -> str:
         """Create a complete deployment package"""
@@ -126,12 +120,7 @@ class EmoTinyOptimizer:
         else:
             if os.path.isdir(embedding_model_path):
                 shutil.copytree(embedding_model_path, os.path.join(output_dir, "embedding_model"))
-        deployment_config = {
-            "emotion_labels": EMOTION_LABELS,
-            "use_onnx": include_onnx,
-            "optimization_config": self.config
-        }
         config_path = os.path.join(output_dir, "deployment_config.joblib")
-        joblib.dump(deployment_config, config_path)
+        joblib.dump({"emotion_labels": EMOTION_LABELS, "use_onnx": include_onnx, "optimization_config": self.config}, config_path)
         print(f"Deployment package created at: {output_dir}")
         return output_dir

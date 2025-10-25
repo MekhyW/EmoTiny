@@ -157,11 +157,7 @@ def classify_emotion_with_confidence(text: str) -> Dict[str, Union[str, float, D
     probabilities = _global_classifier.predict_proba(text)
     prediction = max(probabilities, key=probabilities.get)
     confidence = probabilities[prediction]
-    return {
-        "emotion": prediction,
-        "confidence": confidence,
-        "probabilities": probabilities
-    }
+    return {"emotion": prediction, "confidence": confidence, "probabilities": probabilities}
 
 
 def classify_emotions_batch(texts: List[str]) -> List[str]:
