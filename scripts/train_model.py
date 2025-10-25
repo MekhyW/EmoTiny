@@ -1,7 +1,3 @@
-"""
-Example script for training an EmoTiny emotion classifier.
-"""
-
 import os
 import sys
 import argparse
@@ -30,11 +26,7 @@ def main():
     print(f"Classifier: {args.classifier}")
     preprocessor = EmoTinyPreprocessor(device=args.device)
     texts, labels = preprocessor.load_dataset_from_csv(args.data, args.text_column, args.label_column)
-    config = {
-        "classifier_type": args.classifier,
-        "random_state": 42
-    }
-    trainer = EmoTinyTrainer(config)
+    trainer = EmoTinyTrainer({"classifier_type": args.classifier, "random_state": 42})
     if args.hyperparameter_search:
         print("🔍 Performing hyperparameter search...")
         search_results = trainer.hyperparameter_search(texts, labels)
@@ -57,13 +49,8 @@ def main():
         quantized_results = optimizer.benchmark_model(quantized_path, embedding_dim)
         print(f"Original ONNX: {original_results['average_time_ms']:.2f} ms")
         print(f"Quantized ONNX: {quantized_results['average_time_ms']:.2f} ms")
-        speedup = original_results['average_time_ms'] / quantized_results['average_time_ms']
-        print(f"Quantization speedup: {speedup:.2f}x")
+        print(f"Quantization speedup: {original_results['average_time_ms'] / quantized_results['average_time_ms']}x")
     print(f"🎉 Model saved to: {args.output}")
-    print("\nTo use the model:")
-    print(f"from emotiny import load_model, classify_emotion")
-    print(f"load_model('{args.output}')")
-    print(f"emotion = classify_emotion('Your text here')")
 
 
 if __name__ == "__main__":

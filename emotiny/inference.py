@@ -1,7 +1,3 @@
-"""
-Fast inference module for EmoTiny emotion classification.
-"""
-
 import os
 import numpy as np
 import joblib
@@ -13,20 +9,8 @@ from .config import EMOTION_LABELS
 
 
 class EmoTinyClassifier:
-    """
-    Fast emotion classifier for real-time inference.
-    Optimized for low latency and small footprint.
-    """
-    
     def __init__(self, model_path: str, use_onnx: bool = True, device: str = "cpu"):
-        """
-        Initialize the classifier for inference.
-        
-        Args:
-            model_path: Path to the trained model directory
-            use_onnx: Whether to use ONNX runtime for faster inference
-            device: Device to run inference on ("cpu" or "cuda")
-        """
+        """Initialize the classifier for inference"""
         self.model_path = model_path
         self.use_onnx = use_onnx
         self.device = device
@@ -75,15 +59,7 @@ class EmoTinyClassifier:
             self._load_sklearn_model()
     
     def predict(self, text: str) -> str:
-        """
-        Predict emotion for a single text.
-        
-        Args:
-            text: Input text string
-            
-        Returns:
-            Predicted emotion label
-        """
+        """Predict emotion for a single text"""
         embedding = self.preprocessor.encode_single_text(text)
         if self.onnx_session is not None:
             prediction = self._predict_onnx(embedding)
@@ -92,15 +68,7 @@ class EmoTinyClassifier:
         return EMOTION_LABELS[prediction]
     
     def predict_proba(self, text: str) -> Dict[str, float]:
-        """
-        Predict emotion probabilities for a single text.
-        
-        Args:
-            text: Input text string
-            
-        Returns:
-            Dictionary mapping emotion labels to probabilities
-        """
+        """Predict emotion probabilities for a single text"""
         embedding = self.preprocessor.encode_single_text(text)
         if self.onnx_session is not None:
             probabilities = self._predict_proba_onnx(embedding)
@@ -109,15 +77,7 @@ class EmoTinyClassifier:
         return {label: float(prob) for label, prob in zip(EMOTION_LABELS, probabilities)}
     
     def predict_batch(self, texts: List[str]) -> List[str]:
-        """
-        Predict emotions for a batch of texts.
-        
-        Args:
-            texts: List of text strings
-            
-        Returns:
-            List of predicted emotion labels
-        """
+        """Predict emotions for a batch of texts"""
         embeddings = self.preprocessor.encode_texts(texts, show_progress=False)
         if self.onnx_session is not None:
             predictions = [self._predict_onnx(emb) for emb in embeddings]
@@ -156,8 +116,7 @@ class EmoTinyClassifier:
         outputs = self.onnx_session.run(None, {input_name: embedding.reshape(1, -1).astype(np.float32)})
         if len(outputs) > 1:
             return outputs[1][0].astype(np.float64) # Probability output available
-        else:
-            # Only class output, create one-hot
+        else: # Only class output, create one-hot
             prediction = int(outputs[0][0])
             proba = np.zeros(len(EMOTION_LABELS))
             proba[prediction] = 1.0
@@ -169,14 +128,7 @@ _global_classifier: Optional[EmoTinyClassifier] = None
 
 
 def load_model(model_path: str, use_onnx: bool = True, device: str = "cpu"):
-    """
-    Load a trained EmoTiny model for inference.
-    
-    Args:
-        model_path: Path to the trained model directory
-        use_onnx: Whether to use ONNX runtime for faster inference
-        device: Device to run inference on ("cpu" or "cuda")
-    """
+    """Load a trained EmoTiny model for inference"""
     global _global_classifier
     _global_classifier = EmoTinyClassifier(model_path, use_onnx=use_onnx, device=device)
     print(f"EmoTiny model loaded from: {model_path}")
@@ -187,13 +139,6 @@ def classify_emotion(text: str) -> str:
     Classify emotion for a single text using the loaded model.
     
     This is the main inference function for real-time emotion classification.
-    
-    Args:
-        text: Input text string (1-4 sentences, multilingual support)
-        
-    Returns:
-        Predicted emotion label (one of: neutral, happy, sad, angry, surprised, 
-        disgusted, mischievous, love)
         
     Example:
         >>> load_model("path/to/trained/model")
@@ -206,15 +151,7 @@ def classify_emotion(text: str) -> str:
 
 
 def classify_emotion_with_confidence(text: str) -> Dict[str, Union[str, float, Dict[str, float]]]:
-    """
-    Classify emotion with confidence scores.
-    
-    Args:
-        text: Input text string
-        
-    Returns:
-        Dictionary with prediction, confidence, and all probabilities
-    """
+    """Classify emotion with confidence scores"""
     if _global_classifier is None:
         raise RuntimeError("No model loaded. Call load_model() first.")
     probabilities = _global_classifier.predict_proba(text)
@@ -228,56 +165,17 @@ def classify_emotion_with_confidence(text: str) -> Dict[str, Union[str, float, D
 
 
 def classify_emotions_batch(texts: List[str]) -> List[str]:
-    """
-    Classify emotions for a batch of texts.
-    
-    Args:
-        texts: List of text strings
-        
-    Returns:
-        List of predicted emotion labels
-    """
+    """Classify emotions for a batch of texts"""
     if _global_classifier is None:
         raise RuntimeError("No model loaded. Call load_model() first.")
     return _global_classifier.predict_batch(texts)
 
 
 def get_supported_emotions() -> List[str]:
-    """
-    Get the list of supported emotion labels.
-    
-    Returns:
-        List of emotion labels
-    """
+    """Get the list of supported emotion labels"""
     return EMOTION_LABELS.copy()
 
 
 def is_model_loaded() -> bool:
-    """
-    Check if a model is currently loaded.
-    
-    Returns:
-        True if model is loaded, False otherwise
-    """
+    """Check if a model is currently loaded"""
     return _global_classifier is not None
-
-
-def quick_test():
-    """Quick test function to verify the inference pipeline."""
-    if not is_model_loaded():
-        print("No model loaded. Please load a model first with load_model()")
-        return
-    test_texts = [
-        "I'm so happy today!",
-        "This is terrible, I hate it.",
-        "I love you so much.",
-        "What a surprise!",
-        "I'm feeling neutral about this.",
-        "That's disgusting.",
-        "You're being quite mischievous!",
-        "I'm really angry about this."
-    ]
-    print("Quick test results:")
-    for text in test_texts:
-        emotion = classify_emotion(text)
-        print(f"'{text}' -> {emotion}")

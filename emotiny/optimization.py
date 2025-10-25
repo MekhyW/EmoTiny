@@ -1,7 +1,3 @@
-"""
-Model optimization and quantization for EmoTiny.
-"""
-
 import os
 import numpy as np
 import onnxruntime as ort
@@ -13,33 +9,12 @@ from .config import QUANTIZATION_CONFIG, EMOTION_LABELS
 
 
 class EmoTinyOptimizer:
-    """
-    Model optimization and quantization for deployment.
-    Supports ONNX export and quantization for faster inference.
-    """
-    
     def __init__(self, config: Optional[Dict] = None):
-        """
-        Initialize the optimizer.
-        
-        Args:
-            config: Optimization configuration
-        """
+        """Initialize the optimizer"""
         self.config = {**QUANTIZATION_CONFIG, **(config or {})}
         
     def export_sklearn_to_onnx(self, classifier: BaseEstimator, input_dim: int, output_path: str, model_name: str = "emotiny_classifier") -> str:
-        """
-        Export scikit-learn classifier to ONNX format.
-        
-        Args:
-            classifier: Trained scikit-learn classifier
-            input_dim: Input feature dimension
-            output_path: Path to save ONNX model
-            model_name: Name for the ONNX model
-            
-        Returns:
-            Path to the exported ONNX model
-        """
+        """Export scikit-learn classifier to ONNX format"""
         try:
             from skl2onnx import convert_sklearn
             from skl2onnx.common.data_types import FloatTensorType
@@ -56,17 +31,7 @@ class EmoTinyOptimizer:
         return output_path
     
     def quantize_onnx_model(self, onnx_model_path: str, quantized_model_path: str, quantization_mode: str = "dynamic") -> str:
-        """
-        Quantize ONNX model for faster inference.
-        
-        Args:
-            onnx_model_path: Path to the original ONNX model
-            quantized_model_path: Path to save quantized model
-            quantization_mode: "dynamic" or "static"
-            
-        Returns:
-            Path to the quantized model
-        """
+        """Quantize ONNX model for faster inference"""
         try:
             from onnxruntime.quantization import quantize_dynamic, QuantType
         except ImportError:
@@ -87,17 +52,7 @@ class EmoTinyOptimizer:
         return quantized_model_path
     
     def optimize_sentence_transformer(self, model_name: str, output_dir: str, optimize_for_cpu: bool = True) -> str:
-        """
-        Optimize sentence transformer model for inference.
-        
-        Args:
-            model_name: Name of the sentence transformer model
-            output_dir: Directory to save optimized model
-            optimize_for_cpu: Whether to optimize for CPU inference
-            
-        Returns:
-            Path to optimized model directory
-        """
+        """Optimize sentence transformer model for inference"""
         try:
             from optimum.onnxruntime import ORTModelForFeatureExtraction
             from transformers import AutoTokenizer
@@ -130,17 +85,7 @@ class EmoTinyOptimizer:
             raise RuntimeError(f"ONNX model verification failed: {e}")
     
     def benchmark_model(self, model_path: str, input_dim: int, num_iterations: int = 1000) -> Dict[str, float]:
-        """
-        Benchmark ONNX model inference speed.
-        
-        Args:
-            model_path: Path to ONNX model
-            input_dim: Input feature dimension
-            num_iterations: Number of inference iterations
-            
-        Returns:
-            Benchmark results
-        """
+        """Benchmark ONNX model inference speed"""
         import time
         print(f"Benchmarking model: {model_path}")
         ort_session = ort.InferenceSession(model_path)
@@ -167,18 +112,7 @@ class EmoTinyOptimizer:
         return results
     
     def create_deployment_package(self, classifier_path: str, embedding_model_path: str, output_dir: str, include_onnx: bool = True) -> str:
-        """
-        Create a complete deployment package.
-        
-        Args:
-            classifier_path: Path to trained classifier
-            embedding_model_path: Path to embedding model
-            output_dir: Output directory for deployment package
-            include_onnx: Whether to include ONNX optimized models
-            
-        Returns:
-            Path to deployment package
-        """
+        """Create a complete deployment package"""
         print("Creating deployment package...")
         os.makedirs(output_dir, exist_ok=True)
         import shutil

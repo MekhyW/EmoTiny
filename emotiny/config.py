@@ -1,17 +1,4 @@
-"""
-Configuration settings for EmoTiny emotion classification.
-"""
-
-EMOTION_LABELS = [
-    "neutral",
-    "happy", 
-    "sad",
-    "angry",
-    "surprised",
-    "disgusted",
-    "mischievous",
-    "love"
-]
+EMOTION_LABELS = ["neutral", "happy", "sad", "angry", "surprised", "disgusted", "mischievous", "love"]
 
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 EMBEDDING_DIM = 384  # Dimension of the chosen model

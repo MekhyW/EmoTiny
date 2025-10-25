@@ -1,7 +1,3 @@
-"""
-Data preprocessing and embedding generation for EmoTiny.
-"""
-
 import re
 import numpy as np
 import pandas as pd
@@ -12,19 +8,8 @@ from .config import EMBEDDING_MODEL, EMOTION_LABELS
 
 
 class EmoTinyPreprocessor:
-    """
-    Preprocessor for text data and embedding generation.
-    Optimized for multilingual text and robust to ASR noise.
-    """
-    
     def __init__(self, model_name: str = EMBEDDING_MODEL, device: str = "cpu"):
-        """
-        Initialize the preprocessor with a sentence transformer model.
-        
-        Args:
-            model_name: Name of the sentence transformer model
-            device: Device to run the model on ("cpu" or "cuda")
-        """
+        """Initialize the preprocessor with a sentence transformer model"""
         self.model_name = model_name
         self.device = device
         self.model = None
@@ -41,15 +26,7 @@ class EmoTinyPreprocessor:
                 torch.set_num_threads(1)  # Single thread for consistent latency
                 
     def clean_text(self, text: str) -> str:
-        """
-        Clean text to handle ASR noise and normalize input.
-        
-        Args:
-            text: Raw text input (potentially from ASR)
-            
-        Returns:
-            Cleaned text
-        """
+        """Clean text to handle ASR noise and normalize input"""
         text = text.strip()  # Handle common ASR artifacts
         text = re.sub(r'\s+', ' ', text) # Remove excessive whitespace
         text = re.sub(r'[.]{2,}', '.', text)  # Multiple dots
@@ -61,17 +38,7 @@ class EmoTinyPreprocessor:
         return text.strip()
     
     def encode_texts(self, texts: List[str], batch_size: int = 32, show_progress: bool = True) -> np.ndarray:
-        """
-        Generate embeddings for a list of texts.
-        
-        Args:
-            texts: List of text strings
-            batch_size: Batch size for encoding
-            show_progress: Whether to show progress bar
-            
-        Returns:
-            Numpy array of embeddings
-        """
+        """Generate embeddings for a list of texts"""
         self.load_model()
         cleaned_texts = [self.clean_text(text) for text in texts]
         embeddings = self.model.encode(
@@ -84,15 +51,7 @@ class EmoTinyPreprocessor:
         return embeddings
     
     def encode_single_text(self, text: str) -> np.ndarray:
-        """
-        Generate embedding for a single text (optimized for inference).
-        
-        Args:
-            text: Input text string
-            
-        Returns:
-            Numpy array embedding
-        """
+        """Generate embedding for a single text (optimized for inference)"""
         self.load_model()
         cleaned_text = self.clean_text(text)
         with torch.no_grad():
@@ -106,17 +65,7 @@ class EmoTinyPreprocessor:
         return embedding[0]  # Return single embedding
     
     def prepare_training_data(self, texts: List[str], labels: List[str], validation_split: float = 0.0) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
-        """
-        Prepare training data with embeddings and encoded labels.
-        
-        Args:
-            texts: List of text strings
-            labels: List of emotion labels
-            validation_split: Fraction of data to use for validation
-            
-        Returns:
-            Tuple of (X_train, y_train, X_val, y_val) or (X, y, None, None) if no validation split
-        """
+        """Prepare training data with embeddings and encoded labels"""
         print("Generating embeddings for training data...")
         X = self.encode_texts(texts, show_progress=True)
         y = np.array([self.label_to_idx.get(label, 0) for label in labels])
@@ -127,17 +76,7 @@ class EmoTinyPreprocessor:
         return X, y, None, None
     
     def load_dataset_from_csv(self, csv_path: str, text_column: str = "text", label_column: str = "emotion") -> Tuple[List[str], List[str]]:
-        """
-        Load dataset from CSV file.
-        
-        Args:
-            csv_path: Path to CSV file
-            text_column: Name of the text column
-            label_column: Name of the label column
-            
-        Returns:
-            Tuple of (texts, labels)
-        """
+        """Load dataset from CSV file"""
         df = pd.read_csv(csv_path)
         if text_column not in df.columns or label_column not in df.columns:
             raise ValueError(f"CSV must contain '{text_column}' and '{label_column}' columns")
@@ -155,15 +94,7 @@ class EmoTinyPreprocessor:
         return self.model.get_sentence_embedding_dimension()
     
     def validate_labels(self, labels: List[str]) -> List[str]:
-        """
-        Validate and filter emotion labels.
-        
-        Args:
-            labels: List of emotion labels
-            
-        Returns:
-            List of valid emotion labels
-        """
+        """Validate and filter emotion labels"""
         valid_labels = []
         invalid_count = 0
         for label in labels:

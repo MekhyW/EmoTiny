@@ -1,7 +1,3 @@
-"""
-Training pipeline for EmoTiny emotion classification.
-"""
-
 import os
 import joblib
 import numpy as np
@@ -17,18 +13,8 @@ from .config import DEFAULT_TRAIN_CONFIG, EMOTION_LABELS
 
 
 class EmoTinyTrainer:
-    """
-    Trainer class for emotion classification models.
-    Supports both Logistic Regression and MLP classifiers.
-    """
-    
     def __init__(self, config: Optional[Dict] = None):
-        """
-        Initialize the trainer.
-        
-        Args:
-            config: Training configuration dictionary
-        """
+        """Initialize the trainer."""
         self.config = {**DEFAULT_TRAIN_CONFIG, **(config or {})}
         self.preprocessor = EmoTinyPreprocessor()
         self.classifier = None
@@ -37,7 +23,7 @@ class EmoTinyTrainer:
         self.idx_to_label = {idx: label for idx, label in enumerate(EMOTION_LABELS)}
         
     def _create_classifier(self) -> Any:
-        """Create classifier based on configuration."""
+        """Create classifier based on configuration"""
         if self.config["classifier_type"] == "logistic":
             return LogisticRegression(
                 max_iter=self.config["logistic_max_iter"],
@@ -61,18 +47,7 @@ class EmoTinyTrainer:
             raise ValueError(f"Unknown classifier type: {self.config['classifier_type']}")
     
     def train(self, texts: List[str], labels: List[str], save_path: Optional[str] = None, perform_cv: bool = True) -> Dict[str, Any]:
-        """
-        Train the emotion classifier.
-        
-        Args:
-            texts: List of text samples
-            labels: List of emotion labels
-            save_path: Path to save the trained model
-            perform_cv: Whether to perform cross-validation
-            
-        Returns:
-            Dictionary with training results
-        """
+        """Train the emotion classifier"""
         print(f"Training EmoTiny classifier ({self.config['classifier_type']})...")
         print(f"Dataset size: {len(texts)} samples")
         labels = self.preprocessor.validate_labels(labels)
@@ -108,17 +83,7 @@ class EmoTinyTrainer:
         return self.training_history
     
     def hyperparameter_search(self, texts: List[str], labels: List[str], param_grid: Optional[Dict] = None) -> Dict[str, Any]:
-        """
-        Perform hyperparameter search using GridSearchCV.
-        
-        Args:
-            texts: List of text samples
-            labels: List of emotion labels
-            param_grid: Parameter grid for search
-            
-        Returns:
-            Best parameters and scores
-        """
+        """Perform hyperparameter search using GridSearchCV"""
         print("Performing hyperparameter search...")
         if param_grid is None:
             if self.config["classifier_type"] == "logistic":
@@ -149,16 +114,7 @@ class EmoTinyTrainer:
         }
     
     def evaluate_model(self, texts: List[str], labels: List[str]) -> Dict[str, Any]:
-        """
-        Evaluate the trained model on new data.
-        
-        Args:
-            texts: List of text samples
-            labels: List of true emotion labels
-            
-        Returns:
-            Evaluation metrics
-        """
+        """Evaluate the trained model on new data"""
         if self.classifier is None:
             raise ValueError("Model not trained yet. Call train() first.")
         labels = self.preprocessor.validate_labels(labels)
@@ -191,12 +147,7 @@ class EmoTinyTrainer:
         plt.show()
     
     def save_model(self, save_path: str):
-        """
-        Save the trained model and preprocessor.
-        
-        Args:
-            save_path: Directory path to save the model
-        """
+        """Save the trained model and preprocessor"""
         if self.classifier is None:
             raise ValueError("No trained model to save.")
         os.makedirs(save_path, exist_ok=True)
@@ -216,12 +167,7 @@ class EmoTinyTrainer:
         print(f"Files: classifier.joblib, metadata.joblib")
     
     def load_model(self, model_path: str):
-        """
-        Load a trained model.
-        
-        Args:
-            model_path: Directory path containing the saved model
-        """
+        """Load a trained model"""
         classifier_path = os.path.join(model_path, "classifier.joblib")
         metadata_path = os.path.join(model_path, "metadata.joblib")
         if not os.path.exists(classifier_path) or not os.path.exists(metadata_path):

@@ -1,10 +1,3 @@
-"""
-Generate a labeled emotion dataset from raw texts using a local LLM via Ollama.
-
-Reads all text files from a data directory, splits them into phrases, classifies each phrase into one
-of the 8 EmoTiny labels using Ollama, and saves the resulting dataset to Parquet and optionally CSV.
-"""
-
 import os
 import re
 import time

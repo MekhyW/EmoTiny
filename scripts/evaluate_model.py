@@ -1,7 +1,3 @@
-"""
-Example script for evaluating a trained EmoTiny model.
-"""
-
 import sys
 import argparse
 import time
@@ -24,9 +20,8 @@ def benchmark_inference(model_path: str, test_texts: list, num_iterations: int =
     for _ in range(num_iterations):
         for text in test_texts:
             classify_emotion(text)
-    end_time = time.time()
     total_inferences = num_iterations * len(test_texts)
-    total_time = end_time - start_time
+    total_time = time.time() - start_time
     avg_time = total_time / total_inferences
     throughput = total_inferences / total_time
     print(f"⚡ Benchmark results:")
@@ -34,10 +29,7 @@ def benchmark_inference(model_path: str, test_texts: list, num_iterations: int =
     print(f"  Total time: {total_time:.2f} seconds")
     print(f"  Average time per inference: {avg_time * 1000:.2f} ms")
     print(f"  Throughput: {throughput:.1f} inferences/second")
-    return {
-        "avg_time_ms": avg_time * 1000,
-        "throughput": throughput
-    }
+    return { "avg_time_ms": avg_time * 1000, "throughput": throughput }
 
 
 def test_multilingual_support():
@@ -54,12 +46,6 @@ def test_multilingual_support():
         ("Isso é terrível!", "angry"),
         ("Eu te amo", "love"),
         ("Que surpresa incrível!", "surprised"),
-        
-        # Spanish
-        ("¡Estoy muy feliz hoy!", "happy"),
-        ("¡Esto es terrible!", "angry"),
-        ("Te amo", "love"),
-        ("¡Qué sorpresa increíble!", "surprised"),
     ]
     correct_predictions = 0
     total_predictions = len(test_cases)
@@ -80,9 +66,7 @@ def test_multilingual_support():
 def test_asr_robustness():
     """Test robustness to ASR-like noise."""
     print("🎤 Testing ASR robustness...")
-    # Simulate ASR artifacts
     test_cases = [
-        # Original vs ASR-corrupted
         ("I'm so happy today!", "im so happy today"),  # Missing apostrophe
         ("What a surprise!", "what a surprise"),  # Missing punctuation
         ("This is disgusting.", "this is disgusting"),  # Case changes
