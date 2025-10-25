@@ -30,7 +30,8 @@ class EmoTinyTrainer:
                 solver=self.config["logistic_solver"],
                 random_state=self.config["random_state"],
                 multi_class="ovr",  # One-vs-Rest for multiclass
-                class_weight="balanced"  # Handle class imbalance
+                class_weight="balanced",  # Handle class imbalance
+                verbose=True
             )
         elif self.config["classifier_type"] == "mlp":
             return MLPClassifier(
@@ -41,7 +42,8 @@ class EmoTinyTrainer:
                 validation_fraction=self.config["mlp_validation_fraction"],
                 random_state=self.config["random_state"],
                 learning_rate=self.config["learning_rate"],
-                alpha=self.config["alpha"]
+                alpha=self.config["alpha"],
+                verbose=True
             )
         else:
             raise ValueError(f"Unknown classifier type: {self.config['classifier_type']}")
