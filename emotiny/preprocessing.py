@@ -44,6 +44,11 @@ class EmoTinyPreprocessor:
         self.load_model()
         cleaned_texts = [self.clean_text(text) for text in texts]
         embeddings = self.model.encode(cleaned_texts, batch_size=batch_size, show_progress_bar=show_progress, convert_to_numpy=True, normalize_embeddings=True)
+        nan_mask = np.isnan(embeddings).any(axis=1)
+        if nan_mask.any():
+            nan_count = nan_mask.sum()
+            print(f"Warning: Found {nan_count} embeddings with NaN values. These will be replaced with zero vectors.")
+            embeddings[nan_mask] = 0.0
         return embeddings
     
     def encode_single_text(self, text: str) -> np.ndarray:
@@ -52,6 +57,9 @@ class EmoTinyPreprocessor:
         cleaned_text = self.clean_text(text)
         with torch.no_grad():
             embedding = self.model.encode([cleaned_text], batch_size=1, show_progress_bar=False, convert_to_numpy=True, normalize_embeddings=True)
+        if np.isnan(embedding).any():
+            print(f"Warning: NaN values found in embedding for text: '{text[:50]}...'. Replacing with zero vector.")
+            embedding = np.zeros_like(embedding)
         return embedding[0]  # Return single embedding
     
     def prepare_training_data(self, texts: List[str], labels: List[str], validation_split: float = 0.0) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
@@ -59,6 +67,12 @@ class EmoTinyPreprocessor:
         print("Generating embeddings for training data...")
         X = self.encode_texts(texts, show_progress=True)
         y = np.array([self.label_to_idx.get(label, 0) for label in labels])
+        valid_mask = np.isfinite(X).all(axis=1)
+        if not valid_mask.all():
+            invalid_count = (~valid_mask).sum()
+            print(f"Warning: Filtering out {invalid_count} samples with invalid embeddings (NaN/inf)")
+            X = X[valid_mask]
+            y = y[valid_mask]
         if validation_split > 0:
             from sklearn.model_selection import train_test_split
             X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=validation_split, random_state=42, stratify=y)
