@@ -89,61 +89,43 @@ def classify_phrase_with_retries(phrase: str, current_label: str, model: str, ho
             time.sleep(backoff * attempt)
 
 
-def verify_dataset(df: pd.DataFrame, model: str, host: str, temperature: float, workers: int,
-                   cache_conn: sqlite3.Connection, retries: int, backoff: float,
-                   commit_interval: int = 500):
+def verify_dataset(df: pd.DataFrame, model: str, host: str, temperature: float, workers: int, cache_conn: sqlite3.Connection, retries: int, backoff: float, commit_interval: int = 500):
     phrases = df["text"].astype(str).tolist()
     cached = cache_get_bulk(cache_conn, phrases)
     results = {}
     to_verify = [(p, df.loc[i, "emotion"]) for i, p in enumerate(phrases) if p not in cached]
-
     print(f"Cached labels: {len(cached)} | To verify: {len(to_verify)}")
-
     cur = cache_conn.cursor()
     processed_since_commit = 0
-
     with ThreadPoolExecutor(max_workers=max(1, workers)) as ex:
-        futs = {
-            ex.submit(classify_phrase_with_retries, p, lab, model, host, temperature, retries, backoff): p
-            for p, lab in to_verify
-        }
+        futs = {ex.submit(classify_phrase_with_retries, p, lab, model, host, temperature, retries, backoff): p for p, lab in to_verify}
         for fut in tqdm(as_completed(futs), total=len(futs), desc="Verifying", unit="phrase"):
             p = futs[fut]
             try:
                 label = fut.result()
             except Exception:
-                label = "neutral"
-
+                label = ""
             results[p] = label
             cache_put(cache_conn, p, label)
             processed_since_commit += 1
-
-            # Commit periodically for durability
             if processed_since_commit >= commit_interval:
                 cache_conn.commit()
                 processed_since_commit = 0
-
-    # Final commit
     cache_conn.commit()
-
     all_results = dict(cached)
     all_results.update(results)
-
     updated = 0
     empty_filled = 0
-
     for i, row in df.iterrows():
         p = str(row["text"])
         new_label = all_results.get(p, "").strip().lower()
         old_label = str(row.get("emotion", "")).strip().lower()
-
         if not old_label or old_label not in EMOTION_LABELS:
             df.at[i, "emotion"] = new_label
             empty_filled += 1
         elif new_label != old_label:
             df.at[i, "emotion"] = new_label
             updated += 1
-
     return df, updated, empty_filled
 
 
@@ -159,24 +141,11 @@ def main():
     parser.add_argument("--retries", type=int, default=3)
     parser.add_argument("--retry-backoff", type=float, default=1.5)
     args = parser.parse_args()
-
     df = pd.read_csv(args.input_csv)
-
     cache_conn = setup_cache(args.cache_db)
-    df_out, updated, filled = verify_dataset(
-        df=df,
-        model=args.model,
-        host=args.host,
-        temperature=args.temperature,
-        workers=args.workers,
-        cache_conn=cache_conn,
-        retries=args.retries,
-        backoff=args.retry_backoff,
-    )
-
+    df_out, updated, filled = verify_dataset(df=df, model=args.model, host=args.host, temperature=args.temperature, workers=args.workers, cache_conn=cache_conn, retries=args.retries, backoff=args.retry_backoff)
     os.makedirs(os.path.dirname(args.output_csv), exist_ok=True)
     df_out.to_csv(args.output_csv, index=False)
-
     print(f"\nSaved improved dataset to: {args.output_csv}")
     print(f"Updated incorrect labels: {updated}")
     print(f"Filled empty labels: {filled}")
