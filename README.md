@@ -69,14 +69,14 @@ ollama serve
 3) Run the dataset generator:
 
 ```bash
-python examples/generate_dataset.py \
+python scripts/generate_dataset.py \
   --data-dir ./data \
   --output-parquet ./data/emotions.parquet \
   --output-csv ./data/emotions.csv \
   --model gemma3:1b
 ```
 
-This will create `text` and `emotion` columns labeled with one of the 8 supported emotions.
+This will create `text` and `emotion` columns labeled with one of the 7 supported emotions.
 
 Option B: Create a CSV file manually with `text` and `emotion` columns:
 
@@ -84,7 +84,6 @@ Option B: Create a CSV file manually with `text` and `emotion` columns:
 text,emotion
 "I'm so happy today!",happy
 "This is terrible",angry
-"I love you so much",love
 "What a surprise!",surprised
 "Estou muito feliz",happy
 "¡Qué sorpresa!",surprised
@@ -93,7 +92,7 @@ text,emotion
 ### 2. Train Model
 
 ```bash
-python examples/train_model.py \
+python scripts/train_model.py \
     --data ./data/emotions.csv \
     --output ./models/emotiny \
     --classifier mlp \
@@ -103,7 +102,7 @@ python examples/train_model.py \
 ### 3. Evaluate Model
 
 ```bash
-python examples/evaluate_model.py \
+python scripts/evaluate_model.py \
     --model ./models/emotiny \
     --test-data ./data/emotions.csv \
     --benchmark \
@@ -122,7 +121,6 @@ python examples/evaluate_model.py \
 | `surprised` | Surprise, shock, fear | "What the hell is this??", "I can't believe it!" |
 | `disgusted` | Disgust, revulsion | "That's disgusting", "Eww, gross!" |
 | `mischievous` | Playful, sassy | "You're being naughty", "Come here often, sweetie?" |
-| `love` | Love, affection | "I love you", "You're amazing!" |
 
 ## Advanced Configuration
 

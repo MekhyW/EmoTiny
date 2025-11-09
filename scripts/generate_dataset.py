@@ -9,7 +9,7 @@ import pandas as pd
 from ollama import Client
 from tqdm import tqdm
 
-EMOTION_LABELS = ["neutral", "happy", "sad", "angry", "surprised", "disgusted", "mischievous", "love"]
+EMOTION_LABELS = ["neutral", "happy", "sad", "angry", "surprised", "disgusted", "mischievous"]
 
 def iter_text_file_paths(data_dir: str, extensions: Tuple[str, ...] = (".txt", ".md")) -> Iterable[str]:
     paths: List[str] = []
@@ -83,8 +83,6 @@ def normalize_label(raw: str) -> str:
         "mischief": "mischievous",
         "playful": "mischievous",
         "sassy": "mischievous",
-        "love": "love",
-        "affection": "love",
         # Portuguese common mappings
         "neutro": "neutral",
         "feliz": "happy",
@@ -96,8 +94,6 @@ def normalize_label(raw: str) -> str:
         "nojento": "disgusted",
         "malicioso": "mischievous",
         "safado": "mischievous",
-        "amor": "love",
-        "apaixonado": "love",
     }
     canonical = mapping.get(t, t)
     if canonical in EMOTION_LABELS:
@@ -109,17 +105,16 @@ def classify_phrase_with_ollama(phrase: str, model: str = "gemma3:1b", host: str
     prompt = f"""
 You are an emotion classifier for short text in English and Portuguese.
 
-Classify the emotion of the following phrase into EXACTLY ONE of these labels: neutral, happy, sad, angry, surprised, disgusted, mischievous, love.
+Classify the emotion of the following phrase into EXACTLY ONE of these labels: neutral, happy, sad, angry, surprised, disgusted, mischievous.
 
 Use these definitions:
 - neutral: neutral/calm state, phrase without strong emotion
-- happy: joy, happiness, very positive emotion
+- happy: joy, happiness, very positive emotion or explicit affection
 - sad: sadness, melancholy, feeling down
 - angry: anger, frustration, very negative emotion
 - surprised: surprise, shock, fear, unexpected event
 - disgusted: disgust, revulsion, aversion
 - mischievous: playful, sassy, sexy, seductive
-- love: love, explicit affection, romantic
 
 Return ONLY the label word.
 Do NOT include any punctuation, and do NOT justify your choice.

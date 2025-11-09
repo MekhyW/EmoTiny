@@ -56,17 +56,16 @@ If the assigned label seems correct, return it.
 If the label is incorrect, change it to the most appropriate one.
 
 Return ONLY ONE of the following labels:
-neutral, happy, sad, angry, surprised, disgusted, mischievous, love.
+neutral, happy, sad, angry, surprised, disgusted, mischievous.
 
 Use these definitions:
 - neutral: neutral/calm state, phrase without strong emotion
-- happy: joy, happiness, very positive emotion
+- happy: joy, happiness, very positive emotion or explicit affection
 - sad: sadness, melancholy, feeling down
 - angry: anger, frustration, very negative emotion
 - surprised: surprise, shock, fear, unexpected event
 - disgusted: disgust, revulsion, aversion
 - mischievous: playful, sassy, sexy, seductive
-- love: love, explicit affection, romantic
 
 Phrase: {phrase}
 Assigned label: {current_label}

@@ -39,12 +39,11 @@ def test_multilingual_support():
         # English
         ("I'm so happy today!", "happy"),
         ("This is terrible!", "angry"),
-        ("I love you", "love"),
+        ("I can't believe this is happening!", "surprised"),
         
         # Portuguese
         ("Estou muito feliz hoje!", "happy"),
         ("Isso é terrível!", "angry"),
-        ("Eu te amo", "love"),
         ("Que surpresa incrível!", "surprised"),
     ]
     correct_predictions = 0
