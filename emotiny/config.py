@@ -1,7 +1,6 @@
 EMOTION_LABELS = ["neutral", "happy", "sad", "angry", "surprised", "disgusted", "mischievous"]
 
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-EMBEDDING_DIM = 384  # Dimension of the chosen model
 
 DEFAULT_TRAIN_CONFIG = {
     "test_size": 0.2,
