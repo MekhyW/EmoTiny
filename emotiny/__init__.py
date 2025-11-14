@@ -7,12 +7,14 @@ optimized for low latency and small footprint deployment.
 
 __author__ = "Mekhy W.!"
 
-from .inference import classify_emotion, EmoTinyClassifier
+from .inference import load_model, classify_emotion, classify_emotion_with_confidence, EmoTinyClassifier
 from .training import EmoTinyTrainer
 from .preprocessing import EmoTinyPreprocessor
 
 __all__ = [
+    "load_model",
     "classify_emotion",
+    "classify_emotion_with_confidence",
     "EmoTinyClassifier", 
     "EmoTinyTrainer",
     "EmoTinyPreprocessor"

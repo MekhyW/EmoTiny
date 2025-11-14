@@ -69,18 +69,32 @@ class EmoTinyOptimizer:
         return output_dir
     
     def _verify_onnx_model(self, onnx_model_path: str, input_dim: int):
-        """Verify ONNX model can be loaded and run."""
         try:
             ort_session = ort.InferenceSession(onnx_model_path)
             dummy_input = np.random.randn(1, input_dim).astype(np.float32)
             input_name = ort_session.get_inputs()[0].name
             outputs = ort_session.run(None, {input_name: dummy_input})
-            print(f"ONNX model verification successful!")
+            print("ONNX model verification successful!")
             print(f"Input shape: {dummy_input.shape}")
-            print(f"Output shape: {outputs[0].shape}")
-            print(f"Number of classes: {outputs[0].shape[1]}")
-            if outputs[0].shape[1] != len(EMOTION_LABELS):
-                warnings.warn(f"Output dimension mismatch: expected {len(EMOTION_LABELS)}, got {outputs[0].shape[1]}")
+            for i, out in enumerate(outputs):
+                if hasattr(out, "shape"):
+                    print(f"Output[{i}] shape: {out.shape}")
+                else:
+                    print(f"Output[{i}] type: {type(out).__name__}")
+            if len(outputs) > 1:
+                out = outputs[1]
+                if hasattr(out, "ndim") and out.ndim == 2:
+                    num_classes = out.shape[1]
+                    print(f"Number of classes: {num_classes}")
+                    if num_classes != len(EMOTION_LABELS):
+                        warnings.warn(f"Output dimension mismatch: expected {len(EMOTION_LABELS)}, got {num_classes}")
+                elif isinstance(out, list) and len(out) > 0 and isinstance(out[0], dict):
+                    num_classes = len(out[0])
+                    print(f"Number of classes: {num_classes}")
+                    if num_classes != len(EMOTION_LABELS):
+                        warnings.warn(f"Output dimension mismatch: expected {len(EMOTION_LABELS)}, got {num_classes}")
+            else:
+                print(f"Label-only output detected")
         except Exception as e:
             raise RuntimeError(f"ONNX model verification failed: {e}")
     

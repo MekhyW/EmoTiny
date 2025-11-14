@@ -95,8 +95,7 @@ text,emotion
 python scripts/train_model.py \
     --data ./data/emotions.csv \
     --output ./models/emotiny \
-    --classifier mlp \
-    --export-onnx
+    --classifier mlp
 ```
 
 ### 3. Evaluate Model
@@ -110,12 +109,21 @@ python scripts/evaluate_model.py \
     --asr-robustness
 ```
 
+### 4. ONNX Optimization
+
+```bash
+python scripts/optimize_model.py \
+    --model ./models/emotiny \
+    --output ./models/emotiny-optimized \
+    --classifier mlp
+```
+
 ## Supported Emotions
 
 | Emotion | Description | Example Texts |
 |---------|-------------|---------------|
 | `neutral` | Neutral/calm state | "The meeting will be at 8pm", "Got it, I understand" |
-| `happy` | Joy, happiness | "I'm so happy!", "Yay this is great!" |
+| `happy` | Joy, happiness, affection/love | "I'm so happy!", "Yay this is great!" |
 | `sad` | Sadness, melancholy | "I'm feeling down", "My dog just died..." |
 | `angry` | Anger, frustration | "I'm furious!", "Goddamit you had ONE job" |
 | `surprised` | Surprise, shock, fear | "What the hell is this??", "I can't believe it!" |
@@ -138,15 +146,6 @@ config = {
 }
 
 trainer = EmoTinyTrainer(config)
-```
-
-### ONNX Optimization
-
-```python
-from emotiny.optimization import EmoTinyOptimizer
-optimizer = EmoTinyOptimizer()
-optimizer.export_sklearn_to_onnx(classifier, input_dim=384, output_path="model.onnx")
-optimizer.quantize_onnx_model("model.onnx", "model_quantized.onnx")
 ```
 
 ## Technical Details
