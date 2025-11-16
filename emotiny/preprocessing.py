@@ -1,6 +1,5 @@
 import re
 import numpy as np
-import pandas as pd
 from typing import List, Tuple, Optional
 from sentence_transformers import SentenceTransformer
 import torch
@@ -27,7 +26,7 @@ class EmoTinyPreprocessor:
                 
     def clean_text(self, text: str) -> str:
         """Clean text to handle ASR noise and normalize input"""
-        if pd.isna(text) or text is None:
+        if isinstance(text, float) and np.isnan(text):
             return ""
         text = text.strip()  # Handle common ASR artifacts
         text = re.sub(r'\s+', ' ', text) # Remove excessive whitespace
@@ -81,6 +80,7 @@ class EmoTinyPreprocessor:
     
     def load_dataset_from_csv(self, csv_path: str, text_column: str = "text", label_column: str = "emotion") -> Tuple[List[str], List[str]]:
         """Load dataset from CSV file"""
+        import pandas as pd
         df = pd.read_csv(csv_path)
         if text_column not in df.columns or label_column not in df.columns:
             raise ValueError(f"CSV must contain '{text_column}' and '{label_column}' columns")
