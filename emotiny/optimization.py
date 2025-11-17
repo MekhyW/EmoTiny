@@ -22,7 +22,7 @@ class EmoTinyOptimizer:
             raise ImportError("skl2onnx is required for ONNX export. Install with: pip install skl2onnx")
         print(f"Exporting {type(classifier).__name__} to ONNX...")
         initial_type = [('float_input', FloatTensorType([None, input_dim]))]
-        onnx_model = convert_sklearn(classifier, initial_types=initial_type, target_opset=self.config["onnx_opset_version"])
+        onnx_model = convert_sklearn(classifier, initial_types=initial_type, target_opset=self.config["onnx_opset_version"], options={"zipmap": False})
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, "wb") as f:
             f.write(onnx_model.SerializeToString())

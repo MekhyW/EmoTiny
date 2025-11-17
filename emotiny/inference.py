@@ -102,25 +102,37 @@ class EmoTinyClassifier:
             return proba
     
     def _predict_onnx(self, embedding: np.ndarray) -> int:
-        """Predict using ONNX model."""
         input_name = self.onnx_session.get_inputs()[0].name
         outputs = self.onnx_session.run(None, {input_name: embedding.reshape(1, -1).astype(np.float32)})
         if len(outputs) == 1:
-            return int(outputs[0][0])
-        else:
-            return int(np.argmax(outputs[1][0]))  # outputs[1] is usually probabilities
+            out = outputs[0]
+            if hasattr(out, "ndim") and out.ndim == 2:
+                return int(np.argmax(out[0]))
+            return int(np.array(out).reshape(-1)[0])
+        probs = outputs[1]
+        if isinstance(probs, list) and len(probs) > 0 and isinstance(probs[0], dict):
+            labels = self.metadata.get("emotion_labels", EMOTION_LABELS)
+            vec = np.array([probs[0].get(str(i), probs[0].get(i, 0.0)) for i in range(len(labels))], dtype=np.float64)
+            return int(np.argmax(vec))
+        return int(np.argmax(np.asarray(probs)[0]))
     
     def _predict_proba_onnx(self, embedding: np.ndarray) -> np.ndarray:
-        """Predict probabilities using ONNX model."""
         input_name = self.onnx_session.get_inputs()[0].name
         outputs = self.onnx_session.run(None, {input_name: embedding.reshape(1, -1).astype(np.float32)})
         if len(outputs) > 1:
-            return outputs[1][0].astype(np.float64) # Probability output available
-        else: # Only class output, create one-hot
-            prediction = int(outputs[0][0])
-            proba = np.zeros(len(EMOTION_LABELS))
-            proba[prediction] = 1.0
-            return proba
+            probs = outputs[1]
+            if isinstance(probs, list) and len(probs) > 0 and isinstance(probs[0], dict):
+                labels = self.metadata.get("emotion_labels", EMOTION_LABELS)
+                vec = np.array([probs[0].get(str(i), probs[0].get(i, 0.0)) for i in range(len(labels))], dtype=np.float64)
+                return vec
+            return np.asarray(probs)[0].astype(np.float64)
+        out = outputs[0]
+        if hasattr(out, "ndim") and out.ndim == 2:
+            return np.asarray(out)[0].astype(np.float64)
+        prediction = int(np.array(out).reshape(-1)[0])
+        proba = np.zeros(len(EMOTION_LABELS))
+        proba[prediction] = 1.0
+        return proba
 
 
 # Global classifier instance for the simple API
